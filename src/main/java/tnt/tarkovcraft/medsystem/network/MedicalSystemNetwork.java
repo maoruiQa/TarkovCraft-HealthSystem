@@ -13,6 +13,8 @@ import tnt.tarkovcraft.medsystem.MedicalSystem;
 import tnt.tarkovcraft.medsystem.network.message.C2S_SelectBodyPart;
 import tnt.tarkovcraft.medsystem.network.message.S2C_OpenBodyPartSelectScreen;
 import tnt.tarkovcraft.medsystem.network.message.S2C_SendHealthDefinitions;
+import tnt.tarkovcraft.medsystem.network.message.S2C_SendServerEffectChances;
+import tnt.tarkovcraft.medsystem.common.config.MedSystemConfig;
 
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -36,6 +38,7 @@ public final class MedicalSystemNetwork {
         registry.playToServer(C2S_SelectBodyPart.TYPE, C2S_SelectBodyPart.CODEC, C2S_SelectBodyPart::handleMessage);
 
         registry.configurationToClient(S2C_SendHealthDefinitions.TYPE, S2C_SendHealthDefinitions.CODEC, S2C_SendHealthDefinitions::handleMessage);
+        registry.configurationToClient(S2C_SendServerEffectChances.TYPE, S2C_SendServerEffectChances.CODEC, S2C_SendServerEffectChances::handleMessage);
     }
 
     @SubscribeEvent
@@ -49,7 +52,19 @@ public final class MedicalSystemNetwork {
 
         @Override
         public void run(Consumer<CustomPacketPayload> sender) {
+            // send health system definitions
             sender.accept(MedicalSystem.HEALTH_SYSTEM.getConfigurationPayload());
+            // send server-configured weapon effect chances
+            MedSystemConfig cfg = MedicalSystem.getConfig();
+            sender.accept(new S2C_SendServerEffectChances(
+                    cfg.swordLightBleedChance,
+                    cfg.swordHeavyBleedChance,
+                    cfg.axeLightBleedChance,
+                    cfg.axeHeavyBleedChance,
+                    cfg.axeFractureChance,
+                    cfg.bluntFractureChance,
+                    cfg.bluntLightBleedChance
+            ));
             this.listener.finishCurrentTask(TYPE);
         }
 
