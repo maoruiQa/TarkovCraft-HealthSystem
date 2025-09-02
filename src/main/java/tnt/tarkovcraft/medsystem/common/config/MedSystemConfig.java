@@ -62,6 +62,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.0##")
     @Configurable.Comment("Global multiplier for chances of negative effects caused by FALL damage (applies to data-driven reactions). 1.0 = default")
+    @Configurable.Synchronized
     public float fallEffectChanceMultiplier = 1.0F;
 
     // Vanilla tool hit effect chances (server-side). These replace hardcoded defaults.
@@ -70,6 +71,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Sword hit: chance for Light Bleed")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float swordLightBleedChance = 0.10F;
 
     @Configurable
@@ -77,6 +79,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Sword hit: chance for Heavy Bleed")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float swordHeavyBleedChance = 0.04F;
 
     @Configurable
@@ -84,6 +87,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Axe hit: chance for Light Bleed")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float axeLightBleedChance = 0.10F;
 
     @Configurable
@@ -91,6 +95,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Axe hit: chance for Heavy Bleed")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float axeHeavyBleedChance = 0.02F;
 
     @Configurable
@@ -98,6 +103,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Axe hit: chance for Fracture")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float axeFractureChance = 0.10F;
 
     @Configurable
@@ -105,6 +111,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Blunt tool hit (shovel/pickaxe/hoe/mace): chance for Fracture")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float bluntFractureChance = 0.10F;
 
     @Configurable
@@ -112,5 +119,6 @@ public final class MedSystemConfig {
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Blunt tool hit (shovel/pickaxe/hoe/mace): chance for Light Bleed")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float bluntLightBleedChance = 0.05F;
 }

@@ -38,6 +38,7 @@ public final class MedicalSystem {
 
     public MedicalSystem(IEventBus modEventBus, ModContainer container) {
         config = Configuration.registerSimpleYmlConfig(MedSystemConfig.class);
+        MedicalSystem.LOGGER.info(MedicalSystem.MARKER, "Config loaded: enableHitEffects={}, addHitEffectsToVanillaItems={}, fallEffectChanceMultiplier={}", config.enableHitEffects, config.addHitEffectsToVanillaItems, config.fallEffectChanceMultiplier);
 
         modEventBus.addListener(this::createRegistries);
         modEventBus.addListener(this::modifyDefaultComponents);
@@ -84,8 +85,12 @@ public final class MedicalSystem {
     }
 
     private void modifyDefaultComponents(ModifyDefaultComponentsEvent event) {
-        if (config.addHitEffectsToVanillaItems)
+        if (config.addHitEffectsToVanillaItems) {
+            MedicalSystem.LOGGER.info(MedicalSystem.MARKER, "Applying vanilla hit effect chances: sword(L={},H={}), axe(L={},H={},Fx={}), blunt(Fx={},L={})", config.swordLightBleedChance, config.swordHeavyBleedChance, config.axeLightBleedChance, config.axeHeavyBleedChance, config.axeFractureChance, config.bluntFractureChance, config.bluntLightBleedChance);
             VanillaItemComponentAssignments.adjustItemData((item, attr) -> event.modify(item, builder -> builder.set(MedSystemItemComponents.SIDE_EFFECTS.get(), attr)));
+        } else {
+            MedicalSystem.LOGGER.info(MedicalSystem.MARKER, "Vanilla hit effects are disabled by config (addHitEffectsToVanillaItems=false)");
+        }
 
         // weight integration
         BiConsumer<ItemLike, Integer> registration = (item, weight) -> event.modify(item, builder -> builder.set(CoreItemDataComponents.WEIGHT.get(), weight));
