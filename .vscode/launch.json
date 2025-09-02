@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Client",
+      "presentation": {
+        "group": "Mod Development - TarkovCraft-HealthSystem",
+        "order": 0
+      },
+      "projectName": "TarkovCraft-HealthSystem",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\user\\Desktop\\ai-workspace\\TarkovCraft-HealthSystem\\build\\moddev\\clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\user\\Desktop\\ai-workspace\\TarkovCraft-HealthSystem\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dmedsystem%%C:\\Users\\user\\Desktop\\ai-workspace\\TarkovCraft-HealthSystem\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Server",
+      "presentation": {
+        "group": "Mod Development - TarkovCraft-HealthSystem",
+        "order": 1
+      },
+      "projectName": "TarkovCraft-HealthSystem",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\user\\Desktop\\ai-workspace\\TarkovCraft-HealthSystem\\build\\moddev\\serverRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\user\\Desktop\\ai-workspace\\TarkovCraft-HealthSystem\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dmedsystem%%C:\\Users\\user\\Desktop\\ai-workspace\\TarkovCraft-HealthSystem\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    }
+  ]
+}

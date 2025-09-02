@@ -5,6 +5,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import tnt.tarkovcraft.core.util.context.Context;
 import tnt.tarkovcraft.core.util.context.ContextKeys;
+import tnt.tarkovcraft.medsystem.MedicalSystem;
+import tnt.tarkovcraft.medsystem.common.config.MedSystemConfig;
 import tnt.tarkovcraft.medsystem.common.init.MedSystemChanceFunctions;
 
 public class FallDistanceScaleFunction implements ChanceFunction {
@@ -23,7 +25,9 @@ public class FallDistanceScaleFunction implements ChanceFunction {
     public float apply(float chance, Context context) {
         return context.get(ContextKeys.LIVING_ENTITY).map(entity -> {
             double distance = entity.fallDistance;
-            return (float) (distance * scale) * chance;
+            float base = (float) (distance * scale) * chance;
+            MedSystemConfig cfg = MedicalSystem.getConfig();
+            return base * cfg.fallEffectChanceMultiplier;
         }).orElse(chance);
     }
 

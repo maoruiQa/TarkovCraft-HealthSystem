@@ -52,4 +52,65 @@ public final class MedSystemConfig {
     @Configurable.Comment("Vanilla tools will have chance to cause some negative effects such as bleeds or fractures")
     @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public boolean addHitEffectsToVanillaItems = true;
+
+    // =========================
+    // Server-configurable chances
+    // =========================
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 10.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.0##")
+    @Configurable.Comment("Global multiplier for chances of negative effects caused by FALL damage (applies to data-driven reactions). 1.0 = default")
+    public float fallEffectChanceMultiplier = 1.0F;
+
+    // Vanilla tool hit effect chances (server-side). These replace hardcoded defaults.
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Sword hit: chance for Light Bleed")
+    public float swordLightBleedChance = 0.10F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Sword hit: chance for Heavy Bleed")
+    public float swordHeavyBleedChance = 0.04F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Axe hit: chance for Light Bleed")
+    public float axeLightBleedChance = 0.10F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Axe hit: chance for Heavy Bleed")
+    public float axeHeavyBleedChance = 0.02F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Axe hit: chance for Fracture")
+    public float axeFractureChance = 0.10F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Blunt tool hit (shovel/pickaxe/hoe/mace): chance for Fracture")
+    public float bluntFractureChance = 0.10F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.0, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Blunt tool hit (shovel/pickaxe/hoe/mace): chance for Light Bleed")
+    public float bluntLightBleedChance = 0.05F;
 }
