@@ -121,4 +121,90 @@ public final class MedSystemConfig {
     @Configurable.Comment("Blunt tool hit (shovel/pickaxe/hoe/mace): chance for Light Bleed")
     @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
     public float bluntLightBleedChance = 0.05F;
+
+    // =========================
+    // Body Part Health Configuration
+    // =========================
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.1, max = 5.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Health multiplier for head body part (1.15 = +15%)")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public float headHealthMultiplier = 1.15F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.1, max = 5.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Health multiplier for chest/torso body part (1.10 = +10%)")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public float chestHealthMultiplier = 1.10F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.1, max = 5.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Health multiplier for arm body parts (1.0 = no change)")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public float armHealthMultiplier = 1.0F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.1, max = 5.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Health multiplier for leg body parts (1.0 = no change)")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public float legHealthMultiplier = 1.0F;
+
+    // =========================
+    // Downed Player System Configuration
+    // =========================
+
+    @Configurable
+    @Configurable.Comment("Enable the downed player system")
+    @Configurable.Synchronized
+    public boolean enableDownedSystem = true;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.01, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Head health percentage threshold for downed state (0.15 = 15%)")
+    @Configurable.Synchronized
+    public float headDownedThreshold = 0.17F;
+
+    @Configurable
+    @Configurable.DecimalRange(min = 0.01, max = 1.0)
+    @Configurable.Gui.Slider
+    @Configurable.Gui.NumberFormat("0.00#")
+    @Configurable.Comment("Chest health percentage threshold for downed state (0.10 = 10%)")
+    @Configurable.Synchronized
+    public float chestDownedThreshold = 0.12F;
+
+    @Configurable
+    @Configurable.Comment("Time in seconds before downed player dies")
+    @Configurable.Synchronized
+    public int downedDeathTimer = 45;
+
+    @Configurable
+    @Configurable.Comment("Time in seconds required to rescue a downed player by crouching")
+    @Configurable.Synchronized
+    public int rescueTime = 8;
+
+    @Configurable
+    @Configurable.Comment("Slowness effect level for downed players")
+    @Configurable.Synchronized
+    public int downedSlownessLevel = 4;
+
+    @Configurable
+    @Configurable.Comment("Resistance effect level for downed players")
+    @Configurable.Synchronized
+    public int downedResistanceLevel = 4;
+
+    @Configurable
+    @Configurable.Comment("Weakness effect level for downed players")
+    @Configurable.Synchronized
+    public int downedWeaknessLevel = 1;
 }

@@ -12,6 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import tnt.tarkovcraft.medsystem.MedicalSystem;
 import tnt.tarkovcraft.medsystem.network.message.C2S_SelectBodyPart;
 import tnt.tarkovcraft.medsystem.network.message.S2C_OpenBodyPartSelectScreen;
+import tnt.tarkovcraft.medsystem.network.message.S2C_RescueProgress;
 import tnt.tarkovcraft.medsystem.network.message.S2C_SendHealthDefinitions;
 import tnt.tarkovcraft.medsystem.network.message.S2C_SendServerEffectChances;
 import tnt.tarkovcraft.medsystem.common.config.MedSystemConfig;
@@ -34,6 +35,7 @@ public final class MedicalSystemNetwork {
         PayloadRegistrar registry = event.registrar(NETWORK_ID).executesOn(HandlerThread.MAIN);
 
         registry.playToClient(S2C_OpenBodyPartSelectScreen.TYPE, S2C_OpenBodyPartSelectScreen.CODEC, S2C_OpenBodyPartSelectScreen::handleMessage);
+        registry.playToClient(S2C_RescueProgress.TYPE, S2C_RescueProgress.CODEC, S2C_RescueProgress::handle);
 
         registry.playToServer(C2S_SelectBodyPart.TYPE, C2S_SelectBodyPart.CODEC, C2S_SelectBodyPart::handleMessage);
 

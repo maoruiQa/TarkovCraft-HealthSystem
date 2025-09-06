@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import tnt.tarkovcraft.core.common.statistic.StatisticTracker;
 import tnt.tarkovcraft.core.network.Synchronizable;
@@ -14,9 +15,11 @@ import tnt.tarkovcraft.core.util.context.ContextKeys;
 import tnt.tarkovcraft.medsystem.MedicalSystem;
 import tnt.tarkovcraft.medsystem.common.MedicalSystemContextKeys;
 import tnt.tarkovcraft.medsystem.common.config.MedSystemConfig;
+import tnt.tarkovcraft.medsystem.common.effect.DownedPlayerStatusEffect;
 import tnt.tarkovcraft.medsystem.common.effect.StatusEffect;
 import tnt.tarkovcraft.medsystem.common.effect.StatusEffectMap;
 import tnt.tarkovcraft.medsystem.common.init.MedSystemStats;
+import tnt.tarkovcraft.medsystem.common.init.MedSystemStatusEffects;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -93,6 +96,12 @@ public final class HealthContainer implements Synchronizable<HealthContainer> {
         if (health != previousHealth) {
             updateHealth(entity);
         }
+        
+        // Check for downed state condition
+        if (entity instanceof Player player) {
+            checkDownedState(player, context);
+        }
+        
         if (this.invalidated) {
             this.clearBoundData(entity);
         }
@@ -336,5 +345,57 @@ public final class HealthContainer implements Synchronizable<HealthContainer> {
             bodyPart.setDefinition(healthDef);
         }
         return root;
+    }
+
+    private void checkDownedState(Player player, ContextImpl context) {
+        MedSystemConfig config = MedicalSystem.getConfig();
+        
+        // Skip if downed system is disabled
+        if (!config.enableDownedSystem) {
+            return;
+        }
+        
+        // Check if player is already downed
+        boolean alreadyDowned = this.statusEffects.hasEffect(MedSystemStatusEffects.DOWNED_PLAYER.value());
+        
+        // Find head and chest body parts
+        BodyPart headPart = null;
+        BodyPart chestPart = null;
+        
+        for (BodyPart part : this.bodyParts.values()) {
+            if (part.getGroup() == BodyPartGroup.HEAD) {
+                headPart = part;
+            } else if (part.getGroup() == BodyPartGroup.TORSO) {
+                chestPart = part;
+            }
+        }
+        
+        // Check downed conditions
+        boolean shouldBeDown = false;
+        if (headPart != null && headPart.getHealthPercent() < config.headDownedThreshold) {
+            shouldBeDown = true;
+        }
+        if (chestPart != null && chestPart.getHealthPercent() < config.chestDownedThreshold) {
+            shouldBeDown = true;
+        }
+        
+        if (shouldBeDown && !alreadyDowned && !player.isDeadOrDying()) {
+            // Apply downed status effect in all game modes
+            DownedPlayerStatusEffect downedEffect = new DownedPlayerStatusEffect(-1, 0); // Infinite duration until rescued/death
+            this.statusEffects.addEffect(downedEffect);
+        } else if (!shouldBeDown && alreadyDowned) {
+            // Remove downed effect if health is restored above threshold
+            this.statusEffects.remove(MedSystemStatusEffects.DOWNED_PLAYER.value(), context);
+        }
+    }
+
+    public boolean isPlayerDowned() {
+        return this.statusEffects.hasEffect(MedSystemStatusEffects.DOWNED_PLAYER.value());
+    }
+
+    public DownedPlayerStatusEffect getDownedEffect() {
+        return this.statusEffects.getEffect(MedSystemStatusEffects.DOWNED_PLAYER)
+                .map(effect -> effect instanceof DownedPlayerStatusEffect ? (DownedPlayerStatusEffect) effect : null)
+                .orElse(null);
     }
 }

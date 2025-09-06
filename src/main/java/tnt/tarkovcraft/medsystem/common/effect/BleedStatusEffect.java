@@ -4,11 +4,14 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import tnt.tarkovcraft.core.util.context.Context;
 import tnt.tarkovcraft.core.util.context.ContextKeys;
 import tnt.tarkovcraft.medsystem.api.BodyPartDamageSource;
 import tnt.tarkovcraft.medsystem.common.MedicalSystemContextKeys;
+import tnt.tarkovcraft.medsystem.common.health.HealthContainer;
+import tnt.tarkovcraft.medsystem.common.init.MedSystemDataAttachments;
 import tnt.tarkovcraft.medsystem.common.init.MedSystemDamageTypes;
 
 import java.util.Optional;
@@ -31,6 +34,15 @@ public abstract class BleedStatusEffect extends EntityCausedStatusEffect {
     @Override
     public void apply(Context context) {
         LivingEntity entity = context.getOrThrow(ContextKeys.LIVING_ENTITY);
+        
+        // Skip bleed damage if player is downed
+        if (entity instanceof Player player) {
+            HealthContainer healthContainer = player.getData(MedSystemDataAttachments.HEALTH_CONTAINER);
+            if (healthContainer != null && healthContainer.isPlayerDowned()) {
+                return; // Downed players are immune to bleed effects
+            }
+        }
+        
         Level level = entity.level();
         long time = level.getGameTime();
         if (time % this.getDamageInterval() == 0L && level instanceof ServerLevel serverLevel) {

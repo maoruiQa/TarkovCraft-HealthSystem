@@ -65,6 +65,9 @@
   "status_effect.medsystem.overweight.info": "You are carrying too much weight. Your movement speed is slightly reduced.",
   "status_effect.medsystem.max_overweight": "Overweight",
   "status_effect.medsystem.max_overweight.info": "You are extremely overloaded. Your movement speed is heavily reduced.",
+  "status_effect.medsystem.downed_player": "Downed",
+  "status_effect.medsystem.downed_player.info": "You are critically injured and need rescue",
+  "status_effect.medsystem.downed_player.time_left": "Time left: %s seconds",
 
   "tooltip.medsystem.item.durability": "Uses: %s",
   "tooltip.medsystem.heal_attributes.heal.limited": "Heals %s health points every %s with limit of %s total health points",
@@ -132,5 +135,17 @@
   "config.medsystem-client.option.colorSchema.entry": "Color input",
   "config.medsystem-client.option.colorSchema.comment.0": "Color schema used for color blending of body part overlay based on the part health",
   "config.medsystem-client.option.renderHealth": "Render health",
-  "config.medsystem-client.option.renderHealth.comment.0": "Allows you to toggle default health HUD overlay"
+  "config.medsystem-client.option.renderHealth.comment.0": "Allows you to toggle default health HUD overlay",
+
+  "medsystem.downed.death_timer": "Death in %s seconds",
+  "medsystem.downed.message": "You are critically injured!",
+  "medsystem.downed.help": "Wait for rescue or use medical supplies",
+  "medsystem.rescue.started": "Started rescuing %s",
+  "medsystem.rescue.cancelled": "Rescue cancelled",
+  "medsystem.rescue.completed": "Successfully rescued %s",
+  "medsystem.rescue.rescued_by": "You were rescued by %s",
+  "medsystem.rescue.being_rescued": "Being rescued...",
+  "medsystem.rescue.rescuing": "Rescuing player...",
+  "medsystem.rescue.prompt": "%s needs rescue!",
+  "medsystem.rescue.instruction": "Hold crouch to rescue"
 }

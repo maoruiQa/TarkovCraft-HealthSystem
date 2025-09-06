@@ -3,6 +3,7 @@ package tnt.tarkovcraft.medsystem.common;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -12,10 +13,16 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.*;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Monster;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import tnt.tarkovcraft.core.api.MovementStaminaComponent;
 import tnt.tarkovcraft.core.api.event.EntityWeightUpdateEvent;
@@ -39,6 +46,7 @@ import tnt.tarkovcraft.medsystem.common.health.*;
 import tnt.tarkovcraft.medsystem.common.health.math.DamageDistributor;
 import tnt.tarkovcraft.medsystem.common.health.math.HitCalculator;
 import tnt.tarkovcraft.medsystem.common.init.*;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -65,6 +73,17 @@ public final class MedicalSystemEventHandler {
         float amount = event.getAmount();
         if (event.isCanceled())
             return;
+            
+        // Prevent downed players from healing
+        if (entity instanceof Player player && HealthSystem.hasCustomHealth(player)) {
+            HealthContainer container = HealthSystem.getHealthData(player);
+            if (container.isPlayerDowned()) {
+                // Cancel healing for downed players
+                event.setCanceled(true);
+                return;
+            }
+        }
+            
         if (amount > 0.0F && HealthSystem.hasCustomHealth(entity)) {
             float leftover = entity.getData(MedSystemDataAttachments.HEALTH_CONTAINER).heal(entity, amount, null);
             if (leftover > 0.0F) {
@@ -197,7 +216,16 @@ public final class MedicalSystemEventHandler {
             }
         }
         if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            SkillSystem.triggerAndSynchronize(MedSystemSkillEvents.DAMAGE_TAKEN, entity, totalDamage);
+            // Check if player is downed - if so, don't give skill experience
+            boolean isDownedPlayer = false;
+            if (entity instanceof Player player && HealthSystem.hasCustomHealth(player)) {
+                HealthContainer healthContainer = HealthSystem.getHealthData(player);
+                isDownedPlayer = healthContainer.isPlayerDowned();
+            }
+            
+            if (!isDownedPlayer) {
+                SkillSystem.triggerAndSynchronize(MedSystemSkillEvents.DAMAGE_TAKEN, entity, totalDamage);
+            }
         }
         container.clearDamageContext();
         container.updateHealth(entity);
@@ -318,6 +346,160 @@ public final class MedicalSystemEventHandler {
             String targetLimb = stack.get(MedSystemItemComponents.SELECTED_BODY_PART);
             BodyPart part = container.getBodyPart(targetLimb);
             holder.apply(entity, container, part);
+        }
+    }
+
+    // Prevent downed players from using items
+    @SubscribeEvent
+    private void onPlayerUseItem(LivingEntityUseItemEvent.Start event) {
+        LivingEntity entity = event.getEntity();
+        if (!(entity instanceof Player player))
+            return;
+        
+        if (!HealthSystem.hasCustomHealth(player))
+            return;
+            
+        HealthContainer container = HealthSystem.getHealthData(player);
+        if (container.isPlayerDowned()) {
+            event.setCanceled(true);
+        }
+    }
+
+    // Prevent downed players from interacting with blocks/items
+    @SubscribeEvent
+    private void onPlayerInteractRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        Player player = event.getEntity();
+        
+        if (!HealthSystem.hasCustomHealth(player))
+            return;
+            
+        HealthContainer container = HealthSystem.getHealthData(player);
+        if (container.isPlayerDowned()) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    private void onPlayerInteractRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        Player player = event.getEntity();
+        
+        if (!HealthSystem.hasCustomHealth(player))
+            return;
+            
+        HealthContainer container = HealthSystem.getHealthData(player);
+        if (container.isPlayerDowned()) {
+            event.setCanceled(true);
+        }
+    }
+
+    // Prevent downed players from attacking
+    @SubscribeEvent
+    private void onPlayerAttack(AttackEntityEvent event) {
+        Player player = event.getEntity();
+        
+        if (!HealthSystem.hasCustomHealth(player))
+            return;
+            
+        HealthContainer container = HealthSystem.getHealthData(player);
+        if (container.isPlayerDowned()) {
+            event.setCanceled(true);
+        }
+    }
+
+    // Make monsters ignore downed players and handle give up logic
+    @SubscribeEvent
+    private void onPlayerTick(PlayerTickEvent.Post event) {
+        Player player = event.getEntity();
+        
+        if (!HealthSystem.hasCustomHealth(player))
+            return;
+            
+        HealthContainer container = HealthSystem.getHealthData(player);
+        if (container.isPlayerDowned()) {
+            // Force swimming pose every tick on server side
+            if (!player.level().isClientSide()) {
+                player.setForcedPose(net.minecraft.world.entity.Pose.SWIMMING);
+            }
+            
+            // Prevent jumping by aggressively canceling upward movement every tick
+            if (!player.level().isClientSide()) {
+                Vec3 motion = player.getDeltaMovement();
+                // Cancel any upward movement completely to prevent jumping
+                if (motion.y > 0.0) {
+                    player.setDeltaMovement(motion.x, 0.0, motion.z);
+                }
+                // Also prevent any jumping by resetting the player's on-ground state
+                if (!player.onGround()) {
+                    // Force player back to ground level if they somehow get airborne
+                    player.setPos(player.getX(), player.getY() - 0.1, player.getZ());
+                }
+            }
+            
+            // Handle give up logic on client side
+            if (player.level().isClientSide()) {
+                tnt.tarkovcraft.medsystem.common.effect.DownedPlayerStatusEffect downedEffect = container.getDownedEffect();
+                if (downedEffect != null) {
+                    // Check if R key is being held (using GLFW key code for R)
+                    boolean isRKeyHeld = false;
+                    try {
+                        net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
+                        long window = minecraft.getWindow().getWindow();
+                        isRKeyHeld = org.lwjgl.glfw.GLFW.glfwGetKey(window, org.lwjgl.glfw.GLFW.GLFW_KEY_R) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+                    } catch (Exception e) {
+                        // Fallback if key detection fails
+                        isRKeyHeld = false;
+                    }
+                    
+                    downedEffect.tickGiveUp(isRKeyHeld);
+                    
+                    // Check if player wants to give up - simplified approach
+                    if (downedEffect.shouldGiveUp()) {
+                        // Reset the give up progress to prevent spam
+                        downedEffect.setGiveUpProgress(0);
+                        // The death timer will handle killing the player when it reaches 0
+                    }
+                }
+            }
+            
+            // Make monsters completely ignore downed players
+            if (!player.level().isClientSide()) {
+                // More aggressive approach - check all nearby monsters every tick
+                player.level().getEntitiesOfClass(Monster.class, player.getBoundingBox().inflate(64.0))
+                    .stream()
+                    .filter(monster -> monster.getTarget() == player)
+                    .forEach(monster -> {
+                        // Completely remove the player as target
+                        monster.setTarget(null);
+                        // Stop navigation
+                        monster.getNavigation().stop();
+                        // Clear last hurt by mob to prevent revenge
+                        monster.setLastHurtByMob(null);
+                        // Force the monster to forget about the player
+                        if (monster.getBrain() != null) {
+                            // Clear any memory related to the player if using brain-based AI
+                            monster.getBrain().eraseMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.ATTACK_TARGET);
+                            monster.getBrain().eraseMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.HURT_BY);
+                            monster.getBrain().eraseMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.HURT_BY_ENTITY);
+                        }
+                    });
+            }
+        }
+    }
+    
+    
+    // Prevent monsters from targeting downed players in the first place
+    @SubscribeEvent
+    private void onLivingSetTarget(LivingChangeTargetEvent event) {
+        if (!(event.getNewAboutToBeSetTarget() instanceof Player player))
+            return;
+            
+        if (!HealthSystem.hasCustomHealth(player))
+            return;
+            
+        HealthContainer container = HealthSystem.getHealthData(player);
+        if (container.isPlayerDowned()) {
+            // Cancel the targeting event completely
+            event.setCanceled(true);
         }
     }
 }

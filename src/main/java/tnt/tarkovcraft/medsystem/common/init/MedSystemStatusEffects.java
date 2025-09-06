@@ -60,4 +60,11 @@ public final class MedSystemStatusEffects {
             .combineEffects((a, b) -> a)
             .build()
     );
+    public static final Holder<StatusEffectType<?>> DOWNED_PLAYER = REGISTRY.register("downed_player", key -> StatusEffectType.builder(key, DownedPlayerStatusEffect::new)
+            .persist(DownedPlayerStatusEffect.CODEC)
+            .type(EffectType.NEGATIVE)
+            .setGlobal()
+            .combineEffects((a, b) -> a) // Don't stack, just keep the existing one
+            .build()
+    );
 }

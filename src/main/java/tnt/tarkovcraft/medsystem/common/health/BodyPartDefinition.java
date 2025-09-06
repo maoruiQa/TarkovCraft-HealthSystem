@@ -63,7 +63,29 @@ public final class BodyPartDefinition {
     }
 
     public BodyPart createContainer(String key) {
-        BodyPart part = new BodyPart(key, this.vital, this.maxHealth, this.parentDamageScale, this.damageScale, this.bodyPartGroup);
+        float adjustedMaxHealth = this.maxHealth;
+        
+        // Apply health multipliers from config
+        tnt.tarkovcraft.medsystem.common.config.MedSystemConfig config = tnt.tarkovcraft.medsystem.MedicalSystem.getConfig();
+        switch (this.bodyPartGroup) {
+            case HEAD:
+                adjustedMaxHealth *= config.headHealthMultiplier;
+                break;
+            case TORSO:
+                adjustedMaxHealth *= config.chestHealthMultiplier;
+                break;
+            case ARM:
+                adjustedMaxHealth *= config.armHealthMultiplier;
+                break;
+            case LEG:
+                adjustedMaxHealth *= config.legHealthMultiplier;
+                break;
+            default:
+                // No multiplier for other parts
+                break;
+        }
+        
+        BodyPart part = new BodyPart(key, this.vital, adjustedMaxHealth, this.parentDamageScale, this.damageScale, this.bodyPartGroup);
         part.setDefinition(this);
         return part;
     }

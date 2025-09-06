@@ -20,7 +20,10 @@ import tnt.tarkovcraft.core.util.helper.TextHelper;
 import tnt.tarkovcraft.medsystem.MedicalSystem;
 import tnt.tarkovcraft.medsystem.client.config.MedSystemClientConfig;
 import tnt.tarkovcraft.medsystem.client.ClientServerConfigState;
+import tnt.tarkovcraft.medsystem.client.overlay.DownedPlayerLayer;
 import tnt.tarkovcraft.medsystem.client.overlay.HealthLayer;
+import tnt.tarkovcraft.medsystem.client.overlay.RescuePromptLayer;
+import tnt.tarkovcraft.medsystem.client.GiveUpPromptLayer;
 import tnt.tarkovcraft.medsystem.client.screen.HealthScreen;
 import tnt.tarkovcraft.medsystem.common.init.MedSystemStatusEffects;
 
@@ -64,6 +67,9 @@ public final class MedicalSystemClient {
 
     private void registerGuiLayer(RegisterGuiLayersEvent event) {
         event.registerAbove(StaminaLayer.LAYER_ID, HealthLayer.LAYER_ID, new HealthLayer());
+        event.registerAbove(HealthLayer.LAYER_ID, DownedPlayerLayer.LAYER_ID, new DownedPlayerLayer());
+        event.registerAbove(DownedPlayerLayer.LAYER_ID, RescuePromptLayer.LAYER_ID, new RescuePromptLayer());
+        event.registerAbove(RescuePromptLayer.LAYER_ID, MedicalSystem.resource("give_up_prompt"), new GiveUpPromptLayer());
     }
 
     private void prepareLayerRender(RenderGuiLayerEvent.Pre event) {
