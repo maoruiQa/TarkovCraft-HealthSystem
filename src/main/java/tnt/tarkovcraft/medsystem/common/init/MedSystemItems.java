@@ -16,7 +16,7 @@ public final class MedSystemItems {
     public static final DeferredItem<HealingItem> EMERGENCY_SURGERY_KIT = REGISTRY.registerItem(
             "emergency_surgery_kit",
             properties -> new HealingItem(
-                    properties.durability(5)
+                    properties.durability(MedicalSystem.getConfig().emergencySurgeryKitDurability)
                             .setNoCombineRepair()
                             .component(DataComponents.BREAK_SOUND, null)
                             .component(MedSystemItemComponents.HEAL_ATTRIBUTES, HealItemAttributes.builder()
@@ -66,7 +66,7 @@ public final class MedSystemItems {
     public static final DeferredItem<HealingItem> PAINKILLERS = REGISTRY.registerItem(
             "painkillers",
             properties -> new HealingItem(
-                    properties.durability(4)
+                    properties.durability(MedicalSystem.getConfig().painkillersKitDurability)
                             .setNoCombineRepair()
                             .component(DataComponents.BREAK_SOUND, null)
                             .component(MedSystemItemComponents.HEAL_ATTRIBUTES, HealItemAttributes.builder()
@@ -85,7 +85,7 @@ public final class MedSystemItems {
     public static final DeferredItem<HealingItem> FIRST_AID_KIT = REGISTRY.registerItem(
             "first_aid_kit",
             properties -> new HealingItem(
-                    properties.durability(30)
+                    properties.durability(MedicalSystem.getConfig().firstAidKitDurability)
                             .component(DataComponents.BREAK_SOUND, null)
                             .component(MedSystemItemComponents.HEAL_ATTRIBUTES, HealItemAttributes.builder()
                                     .unrestrictedHealing(20, 2)

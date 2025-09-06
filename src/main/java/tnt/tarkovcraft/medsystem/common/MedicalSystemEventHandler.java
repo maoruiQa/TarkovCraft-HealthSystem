@@ -69,6 +69,10 @@ public final class MedicalSystemEventHandler {
                     // This handles both new players and existing players consistently
                     updateHealthMultipliers(container, player);
                     
+                    // Force synchronize health immediately after multiplier application
+                    // This ensures new players get correct health bars from the start
+                    HealthSystem.synchronizeEntity(livingEntity);
+                    
                     // Reset health to full for players on spawn if they have full vanilla health (respawn case)
                     if (player.getHealth() >= player.getMaxHealth()) {
                         container.getBodyPartStream().forEach(part -> {

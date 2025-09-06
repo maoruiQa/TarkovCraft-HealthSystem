@@ -101,9 +101,28 @@ public class DownedPlayerStatusEffect extends StatusEffect {
         if (!player.level().isClientSide()) {
             deathTimer--;
             if (deathTimer <= 0 && player.level() instanceof ServerLevel) {
-                // Allow normal death process without removing downed effect first
-                // This preserves Minecraft's death screen handling
-                player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+                // Remove the downed effect first to prevent interference with death handling
+                HealthContainer healthContainer = HealthSystem.getHealthData(player);
+                healthContainer.getGlobalStatusEffects().remove(
+                    MedSystemStatusEffects.DOWNED_PLAYER.value(), 
+                    tnt.tarkovcraft.core.util.context.ContextImpl.of(
+                        tnt.tarkovcraft.core.util.context.ContextKeys.LIVING_ENTITY, player,
+                        MedicalSystemContextKeys.HEALTH_CONTAINER, healthContainer
+                    )
+                );
+                
+                // Allow normal death process - using direct health manipulation for better death screen preservation
+                // First clear the forced pose to prevent visual issues
+                player.setForcedPose(null);
+                player.setPose(net.minecraft.world.entity.Pose.STANDING);
+                
+                // Set health to 0 to trigger natural death sequence
+                player.setHealth(0.0F);
+                
+                // If that doesn't work, use damage source as backup
+                if (!player.isDeadOrDying()) {
+                    player.hurt(player.damageSources().starve(), Float.MAX_VALUE);
+                }
                 return; // Don't save NBT since player is dying
             }
         }

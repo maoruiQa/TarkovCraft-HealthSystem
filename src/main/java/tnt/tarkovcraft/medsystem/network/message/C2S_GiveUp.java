@@ -36,9 +36,27 @@ public record C2S_GiveUp() implements CustomPacketPayload {
                 if (HealthSystem.hasCustomHealth(player)) {
                     HealthContainer container = HealthSystem.getHealthData(player);
                     if (container.isPlayerDowned()) {
-                        // Don't remove downed effect first - let normal death process handle it
-                        // This preserves the death screen
-                        player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+                        // Remove the downed effect first to prevent interference with death handling
+                        container.getGlobalStatusEffects().remove(
+                            tnt.tarkovcraft.medsystem.common.init.MedSystemStatusEffects.DOWNED_PLAYER.value(), 
+                            tnt.tarkovcraft.core.util.context.ContextImpl.of(
+                                tnt.tarkovcraft.core.util.context.ContextKeys.LIVING_ENTITY, player,
+                                tnt.tarkovcraft.medsystem.common.MedicalSystemContextKeys.HEALTH_CONTAINER, container
+                            )
+                        );
+                        
+                        // Allow normal death process - using direct health manipulation for better death screen
+                        // First clear the forced pose to prevent visual issues  
+                        player.setForcedPose(null);
+                        player.setPose(net.minecraft.world.entity.Pose.STANDING);
+                        
+                        // Set health to 0 to trigger natural death sequence
+                        player.setHealth(0.0F);
+                        
+                        // If that doesn't work, use damage source as backup
+                        if (!player.isDeadOrDying()) {
+                            player.hurt(player.damageSources().starve(), Float.MAX_VALUE);
+                        }
                     }
                 }
             }

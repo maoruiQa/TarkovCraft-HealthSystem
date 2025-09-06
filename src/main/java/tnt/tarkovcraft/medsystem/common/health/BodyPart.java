@@ -102,12 +102,43 @@ public final class BodyPart {
      * Get health percentage for display purposes using original health ratios.
      * This ensures UI colors are based on original health ranges, not multiplied values.
      */
+    /**
+     * Get health percentage for display purposes with improved logic:
+     * - If player is downed: return very low value (0.05) for very deep red
+     * - Head/Chest near downed threshold: use enhanced sensitivity for early red warning
+     * - Limbs: use original logic
+     */
     public float getDisplayHealthPercent() {
-        // Calculate using original health ratio for proper color display
-        // If maxHealth = originalMaxHealth * multiplier, then
-        // displayPercent = health / maxHealth * multiplier = health / originalMaxHealth
-        float multiplier = this.maxHealth / this.originalMaxHealth;
-        return (this.health / this.maxHealth) * multiplier;
+        // For head and chest, use enhanced color calculation
+        if (this.group == BodyPartGroup.HEAD || this.group == BodyPartGroup.TORSO) {
+            // Get config thresholds
+            tnt.tarkovcraft.medsystem.common.config.MedSystemConfig config = tnt.tarkovcraft.medsystem.MedicalSystem.getConfig();
+            float downedThreshold = (this.group == BodyPartGroup.HEAD) ? config.headDownedThreshold : config.chestDownedThreshold;
+            
+            // Check if player is currently downed (if we can access the container)
+            // For now, we'll detect near-downed state more aggressively
+            
+            // Calculate current health percentage
+            float currentHealthPercent = this.health / this.maxHealth;
+            
+            // If already below downed threshold, return very low value for deep red
+            if (currentHealthPercent <= downedThreshold) {
+                return 0.05f; // Very deep red color
+            }
+            
+            // Enhanced sensitivity: make colors turn red much earlier
+            // Map the range [downedThreshold, 1.0] to [0.0, 1.0] with exponential curve
+            float normalizedHealth = (currentHealthPercent - downedThreshold) / (1.0f - downedThreshold);
+            
+            // Apply exponential curve to make red appear earlier
+            // Using square root to make the transition more aggressive
+            return (float) Math.sqrt(normalizedHealth);
+        } else {
+            // For limbs, use original simple logic
+            float multiplier = this.maxHealth / this.originalMaxHealth;
+            float effectiveMaxHealth = this.maxHealth / multiplier;
+            return this.health / effectiveMaxHealth;
+        }
     }
     
     /**

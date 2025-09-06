@@ -181,6 +181,11 @@ public final class HealthContainer implements Synchronizable<HealthContainer> {
     }
 
     public void updateHealth(LivingEntity entity) {
+        // Don't override health if the entity is dead or dying - preserve Minecraft's death handling
+        if (entity.isDeadOrDying() || entity.getHealth() <= 0.0F) {
+            return;
+        }
+        
         // Container health is the source of truth - sync vanilla health to match container
         float containerHealth = this.getHealth();
         float containerMaxHealth = this.getMaxHealth();

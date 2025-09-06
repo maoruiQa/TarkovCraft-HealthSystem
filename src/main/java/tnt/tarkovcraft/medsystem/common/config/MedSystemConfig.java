@@ -130,17 +130,17 @@ public final class MedSystemConfig {
     @Configurable.DecimalRange(min = 0.1, max = 5.0)
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
-    @Configurable.Comment("Health multiplier for head body part (1.15 = +15%)")
+    @Configurable.Comment("Health multiplier for head body part (1.9 = +90%)")
     @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
-    public float headHealthMultiplier = 1.50F;
+    public float headHealthMultiplier = 1.9F;
 
     @Configurable
     @Configurable.DecimalRange(min = 0.1, max = 5.0)
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
-    @Configurable.Comment("Health multiplier for chest/torso body part (1.10 = +10%)")
+    @Configurable.Comment("Health multiplier for chest/torso body part (1.7 = +70%)")
     @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
-    public float chestHealthMultiplier = 1.50F;
+    public float chestHealthMultiplier = 1.7F;
 
     @Configurable
     @Configurable.DecimalRange(min = 0.1, max = 5.0)
@@ -171,17 +171,17 @@ public final class MedSystemConfig {
     @Configurable.DecimalRange(min = 0.01, max = 1.0)
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
-    @Configurable.Comment("Head health percentage threshold for downed state (0.15 = 15%)")
+    @Configurable.Comment("Head health percentage threshold for downed state (0.45 = 45%)")
     @Configurable.Synchronized
-    public float headDownedThreshold = 0.36F;
+    public float headDownedThreshold = 0.45F;
 
     @Configurable
     @Configurable.DecimalRange(min = 0.01, max = 1.0)
     @Configurable.Gui.Slider
     @Configurable.Gui.NumberFormat("0.00#")
-    @Configurable.Comment("Chest health percentage threshold for downed state (0.10 = 10%)")
+    @Configurable.Comment("Chest health percentage threshold for downed state (0.48 = 48%)")
     @Configurable.Synchronized
-    public float chestDownedThreshold = 0.36F;
+    public float chestDownedThreshold = 0.48F;
 
     @Configurable
     @Configurable.Comment("Time in seconds before downed player dies")
@@ -207,4 +207,54 @@ public final class MedSystemConfig {
     @Configurable.Comment("Weakness effect level for downed players")
     @Configurable.Synchronized
     public int downedWeaknessLevel = 1;
+    
+    // =========================
+    // Medical Item Durability Configuration
+    // =========================
+    
+    @Configurable
+    @Configurable.DecimalRange(min = 1, max = 100)
+    @Configurable.Gui.NumberFormat("0")
+    @Configurable.Comment("Durability (uses) for Emergency Surgery Kit")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public int emergencySurgeryKitDurability = 10;
+    
+    @Configurable
+    @Configurable.DecimalRange(min = 1, max = 200)
+    @Configurable.Gui.NumberFormat("0")
+    @Configurable.Comment("Durability (uses) for First Aid Kit")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public int firstAidKitDurability = 30;
+    
+    @Configurable
+    @Configurable.DecimalRange(min = 1, max = 20)
+    @Configurable.Gui.NumberFormat("0")
+    @Configurable.Comment("Durability (uses) for Painkillers")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public int painkillersKitDurability = 4;
+    
+    // =========================
+    // Medical Item Craft Amount Configuration
+    // =========================
+    
+    @Configurable
+    @Configurable.DecimalRange(min = 1, max = 10)
+    @Configurable.Gui.NumberFormat("0")
+    @Configurable.Comment("Number of bandages crafted per recipe")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public int bandageCraftAmount = 2;
+    
+    @Configurable
+    @Configurable.DecimalRange(min = 1, max = 10)
+    @Configurable.Gui.NumberFormat("0")
+    @Configurable.Comment("Number of splints crafted per recipe")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public int splintCraftAmount = 2;
+    
+    @Configurable
+    @Configurable.DecimalRange(min = 1, max = 10)
+    @Configurable.Gui.NumberFormat("0")
+    @Configurable.Comment("Number of tourniquets crafted per recipe")
+    @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
+    public int tourniquetCraftAmount = 2;
 }
