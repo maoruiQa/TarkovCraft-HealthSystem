@@ -132,7 +132,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Health multiplier for head body part (1.15 = +15%)")
     @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
-    public float headHealthMultiplier = 1.15F;
+    public float headHealthMultiplier = 1.25F;
 
     @Configurable
     @Configurable.DecimalRange(min = 0.1, max = 5.0)
@@ -140,7 +140,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Health multiplier for chest/torso body part (1.10 = +10%)")
     @Configurable.UpdateRestriction(UpdateRestrictions.GAME_RESTART)
-    public float chestHealthMultiplier = 1.10F;
+    public float chestHealthMultiplier = 1.20F;
 
     @Configurable
     @Configurable.DecimalRange(min = 0.1, max = 5.0)
@@ -173,7 +173,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Head health percentage threshold for downed state (0.15 = 15%)")
     @Configurable.Synchronized
-    public float headDownedThreshold = 0.17F;
+    public float headDownedThreshold = 0.20F;
 
     @Configurable
     @Configurable.DecimalRange(min = 0.01, max = 1.0)
@@ -181,7 +181,7 @@ public final class MedSystemConfig {
     @Configurable.Gui.NumberFormat("0.00#")
     @Configurable.Comment("Chest health percentage threshold for downed state (0.10 = 10%)")
     @Configurable.Synchronized
-    public float chestDownedThreshold = 0.12F;
+    public float chestDownedThreshold = 0.15F;
 
     @Configurable
     @Configurable.Comment("Time in seconds before downed player dies")

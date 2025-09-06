@@ -10,7 +10,9 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import tnt.tarkovcraft.medsystem.MedicalSystem;
+import tnt.tarkovcraft.medsystem.network.message.C2S_GiveUp;
 import tnt.tarkovcraft.medsystem.network.message.C2S_SelectBodyPart;
+import tnt.tarkovcraft.medsystem.network.message.S2C_ClearDownedPose;
 import tnt.tarkovcraft.medsystem.network.message.S2C_OpenBodyPartSelectScreen;
 import tnt.tarkovcraft.medsystem.network.message.S2C_RescueProgress;
 import tnt.tarkovcraft.medsystem.network.message.S2C_SendHealthDefinitions;
@@ -34,9 +36,11 @@ public final class MedicalSystemNetwork {
     private void onRegistration(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registry = event.registrar(NETWORK_ID).executesOn(HandlerThread.MAIN);
 
+        registry.playToClient(S2C_ClearDownedPose.TYPE, S2C_ClearDownedPose.CODEC, S2C_ClearDownedPose::handleMessage);
         registry.playToClient(S2C_OpenBodyPartSelectScreen.TYPE, S2C_OpenBodyPartSelectScreen.CODEC, S2C_OpenBodyPartSelectScreen::handleMessage);
         registry.playToClient(S2C_RescueProgress.TYPE, S2C_RescueProgress.CODEC, S2C_RescueProgress::handle);
 
+        registry.playToServer(C2S_GiveUp.TYPE, C2S_GiveUp.CODEC, C2S_GiveUp::handleMessage);
         registry.playToServer(C2S_SelectBodyPart.TYPE, C2S_SelectBodyPart.CODEC, C2S_SelectBodyPart::handleMessage);
 
         registry.configurationToClient(S2C_SendHealthDefinitions.TYPE, S2C_SendHealthDefinitions.CODEC, S2C_SendHealthDefinitions::handleMessage);

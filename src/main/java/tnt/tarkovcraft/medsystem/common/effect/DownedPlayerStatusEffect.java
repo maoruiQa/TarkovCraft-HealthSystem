@@ -100,7 +100,7 @@ public class DownedPlayerStatusEffect extends StatusEffect {
         if (!player.level().isClientSide()) {
             deathTimer--;
             if (deathTimer <= 0 && player.level() instanceof ServerLevel) {
-                player.hurt(player.damageSources().generic(), Float.MAX_VALUE);
+                player.setHealth(0.0F);  // Trigger normal death sequence instead of using hurt()
             }
         }
 
@@ -185,8 +185,8 @@ public class DownedPlayerStatusEffect extends StatusEffect {
     // New method to handle giving up
     public static void handleGiveUp(Player player) {
         if (player != null) {
-            // Work on both client and server side
-            player.hurt(player.damageSources().generic(), Float.MAX_VALUE);
+            // Set health to 0 to trigger normal death sequence
+            player.setHealth(0.0F);
         }
     }
     
@@ -223,9 +223,9 @@ public class DownedPlayerStatusEffect extends StatusEffect {
     }
     
     private static void restoreHealthAfterRescue(HealthContainer container) {
-        // Get slightly adjusted downed thresholds (raised a bit as requested)
-        float headThreshold = 0.17f; // Raised from 15% to 17%
-        float chestThreshold = 0.12f; // Raised from 10% to 12%
+        // Get updated downed thresholds
+        float headThreshold = 0.20f; // Raised to 20%
+        float chestThreshold = 0.15f; // Raised to 15%
         
         // Restore head health if below threshold
         container.getBodyPartStream()
@@ -236,7 +236,7 @@ public class DownedPlayerStatusEffect extends StatusEffect {
                 float healthPercent = currentHealth / maxHealth;
                 
                 if (healthPercent < headThreshold) {
-                    float targetHealth = maxHealth * headThreshold * 1.1f; // 110% of threshold
+                    float targetHealth = maxHealth * 0.35f; // Restore to 35%
                     part.heal(targetHealth - currentHealth);
                 }
             });
@@ -253,7 +253,7 @@ public class DownedPlayerStatusEffect extends StatusEffect {
                 float healthPercent = currentHealth / maxHealth;
                 
                 if (healthPercent < chestThreshold) {
-                    float targetHealth = maxHealth * chestThreshold * 1.1f; // 110% of threshold
+                    float targetHealth = maxHealth * 0.25f; // Restore to 25%
                     part.heal(targetHealth - currentHealth);
                 }
             });

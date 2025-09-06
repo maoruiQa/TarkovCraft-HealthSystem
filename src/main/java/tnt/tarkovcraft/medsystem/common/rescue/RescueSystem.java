@@ -15,6 +15,7 @@ import tnt.tarkovcraft.medsystem.common.effect.DownedPlayerStatusEffect;
 import tnt.tarkovcraft.medsystem.common.health.HealthContainer;
 import tnt.tarkovcraft.medsystem.common.init.MedSystemDataAttachments;
 import tnt.tarkovcraft.medsystem.common.init.MedSystemStatusEffects;
+import tnt.tarkovcraft.medsystem.network.message.S2C_ClearDownedPose;
 import tnt.tarkovcraft.medsystem.network.message.S2C_RescueProgress;
 
 import java.util.HashMap;
@@ -153,14 +154,45 @@ public class RescueSystem {
                         tnt.tarkovcraft.core.util.context.ContextKeys.LIVING_ENTITY, downedPlayer
                 ));
         
-        // Restore a small amount of health to vital parts
+        // Ensure pose is cleared immediately on server
+        downedPlayer.setForcedPose(null);
+        downedPlayer.setPose(net.minecraft.world.entity.Pose.STANDING);
+        downedPlayer.refreshDimensions();
+        
+        // Send pose clear packet to the rescued player's client
+        if (downedPlayer instanceof ServerPlayer downedServerPlayer) {
+            PacketDistributor.sendToPlayer(downedServerPlayer, new S2C_ClearDownedPose());
+        }
+        
+        // Restore a small amount of health to vital parts - using enhanced amounts
         health.getBodyPartStream()
-                .filter(part -> part.getGroup() == tnt.tarkovcraft.medsystem.common.health.BodyPartGroup.HEAD || 
-                               part.getGroup() == tnt.tarkovcraft.medsystem.common.health.BodyPartGroup.TORSO)
+                .filter(part -> {
+                    String groupName = part.getGroup().name().toLowerCase();
+                    return groupName.contains("head") || groupName.contains("chest") || groupName.contains("torso");
+                })
                 .forEach(part -> {
-                    float healAmount = part.getMaxHealth() * 0.2f; // Restore 20% health
-                    part.heal(healAmount);
+                    float currentHealth = part.getHealth();
+                    float maxHealth = part.getMaxHealth();
+                    float healthPercent = currentHealth / maxHealth;
+                    
+                    if (part.getGroup().name().toLowerCase().contains("head")) {
+                        // Restore head to 35% if below 20%
+                        if (healthPercent < 0.20f) {
+                            float targetHealth = maxHealth * 0.35f;
+                            part.heal(targetHealth - currentHealth);
+                        }
+                    } else if (part.getGroup().name().toLowerCase().contains("chest") || 
+                               part.getGroup().name().toLowerCase().contains("torso")) {
+                        // Restore chest to 25% if below 15%
+                        if (healthPercent < 0.15f) {
+                            float targetHealth = maxHealth * 0.25f;
+                            part.heal(targetHealth - currentHealth);
+                        }
+                    }
                 });
+        
+        // Sync health changes
+        tnt.tarkovcraft.medsystem.common.health.HealthSystem.synchronizeEntity(downedPlayer);
         
         // Send success messages
         rescuer.sendSystemMessage(
