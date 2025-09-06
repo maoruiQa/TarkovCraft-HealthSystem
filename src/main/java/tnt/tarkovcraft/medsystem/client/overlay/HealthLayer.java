@@ -100,7 +100,20 @@ public class HealthLayer implements GuiLayer {
         if (colorSchema.length == 1) {
             return Integer.decode(colorSchema[0]);
         }
-        float percent = 1.0F - part.getHealthPercent();
+        
+        // Use display health percentage for proper color calculation
+        // This accounts for multipliers: f(current_health, max_health/multiplier)
+        float displayHealthPercent = part.getDisplayHealthPercent();
+        float displayHealth = part.getDisplayHealth();
+        float originalMaxHealth = part.getOriginalMaxHealth();
+        
+        // Special case: when display health <= 50% of original max and > 0, show deep red
+        if (displayHealth > 0 && displayHealth <= (originalMaxHealth * 0.5f)) {
+            return 0x8B0000; // Dark red color
+        }
+        
+        // Use display health percent for color interpolation (0.0 = full health, 1.0 = no health)
+        float percent = 1.0F - displayHealthPercent;
         if (percent <= 0.0F) {
             return Integer.decode(colorSchema[0]);
         } else if (percent >= 1.0F) {

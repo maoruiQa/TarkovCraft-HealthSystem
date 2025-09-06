@@ -60,10 +60,31 @@ public final class MedicalSystemEventHandler {
         if (event.isCanceled())
             return;
         if (entity instanceof LivingEntity livingEntity) {
-            MedicalSystem.HEALTH_SYSTEM.getHealthContainer(livingEntity).ifPresent(container -> {
-                container.bind(livingEntity);
+            // Get the actual health container (not definition)
+            if (HealthSystem.hasCustomHealth(livingEntity)) {
+                HealthContainer container = HealthSystem.getHealthData(livingEntity);
+                
+                if (entity instanceof Player player) {
+                    // Always ensure health multipliers are applied for all players
+                    // This handles both new players and existing players consistently
+                    updateHealthMultipliers(container, player);
+                    
+                    // Reset health to full for players on spawn if they have full vanilla health (respawn case)
+                    if (player.getHealth() >= player.getMaxHealth()) {
+                        container.getBodyPartStream().forEach(part -> {
+                            part.setHealth(part.getMaxHealth());
+                        });
+                        // Clear any status effects that might have persisted
+                        Context context = tnt.tarkovcraft.core.util.context.ContextImpl.of(
+                            ContextKeys.LIVING_ENTITY, livingEntity,
+                            MedicalSystemContextKeys.HEALTH_CONTAINER, container
+                        );
+                        container.getGlobalStatusEffects().removeAll(context);
+                    }
+                }
+                
                 HealthSystem.synchronizeEntity(livingEntity);
-            });
+            }
         }
     }
 
@@ -501,5 +522,43 @@ public final class MedicalSystemEventHandler {
             // Cancel the targeting event completely
             event.setCanceled(true);
         }
+    }
+    
+    private static void updateHealthMultipliers(HealthContainer container, Player player) {
+        MedSystemConfig config = MedicalSystem.getConfig();
+        
+        container.getBodyPartStream().forEach(part -> {
+            // Check if this part needs its max health updated based on current multipliers
+            float expectedMaxHealth = part.getOriginalMaxHealth();
+            
+            switch (part.getGroup()) {
+                case HEAD:
+                    expectedMaxHealth *= config.headHealthMultiplier;
+                    break;
+                case TORSO:
+                    expectedMaxHealth *= config.chestHealthMultiplier;
+                    break;
+                case ARM:
+                    expectedMaxHealth *= config.armHealthMultiplier;
+                    break;
+                case LEG:
+                    expectedMaxHealth *= config.legHealthMultiplier;
+                    break;
+                default:
+                    // No multiplier for other parts
+                    break;
+            }
+            
+            // Only update if the max health doesn't match expected (avoid unnecessary updates)
+            if (Math.abs(part.getMaxHealth() - expectedMaxHealth) > 0.01f) {
+                float currentHealthPercent = part.getHealth() / part.getMaxHealth();
+                part.setMaxHealth(expectedMaxHealth);
+                // Maintain the same health percentage
+                part.setHealth(expectedMaxHealth * currentHealthPercent);
+            }
+        });
+        
+        // Update player's vanilla health to match container
+        container.updateHealth(player);
     }
 }

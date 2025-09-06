@@ -6,6 +6,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import tnt.tarkovcraft.core.common.statistic.StatisticTracker;
@@ -179,16 +181,18 @@ public final class HealthContainer implements Synchronizable<HealthContainer> {
     }
 
     public void updateHealth(LivingEntity entity) {
-        float playerMaxHealth = entity.getMaxHealth();
+        // Container health is the source of truth - sync vanilla health to match container
+        float containerHealth = this.getHealth();
         float containerMaxHealth = this.getMaxHealth();
-        if (playerMaxHealth != containerMaxHealth) {
-            BodyPart rootPart = this.getRootBodyPart();
-            float diff = playerMaxHealth - containerMaxHealth;
-            float newMaxHealth = rootPart.getMaxHealth() + diff;
-            rootPart.setMaxHealth(Math.max(newMaxHealth, 1.0F));
+        
+        // Set entity's max health to match container total max health
+        AttributeInstance maxHealthAttribute = entity.getAttribute(Attributes.MAX_HEALTH);
+        if (maxHealthAttribute != null && maxHealthAttribute.getBaseValue() != containerMaxHealth) {
+            maxHealthAttribute.setBaseValue(containerMaxHealth);
         }
-        float health = this.getHealth();
-        entity.setHealth(health);
+        
+        // Set entity's current health to match container total health
+        entity.setHealth(containerHealth);
     }
 
     public void hurt(DamageContext context, float amount, BodyPart part, Consumer<BodyPart> onBodyPartLoss) {

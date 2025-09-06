@@ -97,6 +97,27 @@ public final class BodyPart {
     public float getHealthPercent() {
         return this.health / this.maxHealth;
     }
+    
+    /**
+     * Get health percentage for display purposes using original health ratios.
+     * This ensures UI colors are based on original health ranges, not multiplied values.
+     */
+    public float getDisplayHealthPercent() {
+        // Calculate using original health ratio for proper color display
+        // If maxHealth = originalMaxHealth * multiplier, then
+        // displayPercent = health / maxHealth * multiplier = health / originalMaxHealth
+        float multiplier = this.maxHealth / this.originalMaxHealth;
+        return (this.health / this.maxHealth) * multiplier;
+    }
+    
+    /**
+     * Get the display health value for UI purposes based on original health scale
+     */
+    public float getDisplayHealth() {
+        // Return health scaled back to original range for UI display
+        float multiplier = this.maxHealth / this.originalMaxHealth;
+        return this.health / multiplier;
+    }
 
     public void setHealth(float health) {
         this.health = Mth.clamp(health, 0, maxHealth);

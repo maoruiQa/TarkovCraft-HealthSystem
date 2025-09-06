@@ -36,8 +36,9 @@ public record C2S_GiveUp() implements CustomPacketPayload {
                 if (HealthSystem.hasCustomHealth(player)) {
                     HealthContainer container = HealthSystem.getHealthData(player);
                     if (container.isPlayerDowned()) {
-                        // Set health to 0 to trigger normal death sequence
-                        player.setHealth(0.0F);
+                        // Don't remove downed effect first - let normal death process handle it
+                        // This preserves the death screen
+                        player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
                     }
                 }
             }

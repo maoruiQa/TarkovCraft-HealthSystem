@@ -123,7 +123,7 @@ public class BodyPartHealthWidget extends AbstractWidget {
         int secondaryBackground = ARGB.scaleRGB(background, 0.8F);
         int color = HealthLayer.getColor(overlay.deadLimbColor, overlay.colorSchema, this.part) | 0xFF << 24;
         int secondaryColor = ARGB.scaleRGB(color, 0.8F);
-        float f = this.part.getHealthPercent();
+        float f = this.part.getDisplayHealthPercent(); // Use display health percentage based on original max health
         // Health bar background
         graphics.fillGradient(this.getX() + this.frameSize + 1, this.getY() + this.frameSize + 13, this.getRight() - this.frameSize - 1, this.getY() + this.frameSize + 17, background, secondaryBackground);
         // Health bar foreground - current health

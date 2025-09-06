@@ -15,6 +15,7 @@ import tnt.tarkovcraft.core.util.context.Context;
 import tnt.tarkovcraft.core.util.context.ContextKeys;
 import tnt.tarkovcraft.medsystem.MedicalSystem;
 import tnt.tarkovcraft.medsystem.common.config.MedSystemConfig;
+import tnt.tarkovcraft.medsystem.common.health.BodyPartGroup;
 import tnt.tarkovcraft.medsystem.common.health.HealthContainer;
 import tnt.tarkovcraft.medsystem.common.health.HealthSystem;
 import tnt.tarkovcraft.medsystem.common.MedicalSystemContextKeys;
@@ -100,7 +101,10 @@ public class DownedPlayerStatusEffect extends StatusEffect {
         if (!player.level().isClientSide()) {
             deathTimer--;
             if (deathTimer <= 0 && player.level() instanceof ServerLevel) {
-                player.setHealth(0.0F);  // Trigger normal death sequence instead of using hurt()
+                // Allow normal death process without removing downed effect first
+                // This preserves Minecraft's death screen handling
+                player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+                return; // Don't save NBT since player is dying
             }
         }
 
@@ -190,6 +194,34 @@ public class DownedPlayerStatusEffect extends StatusEffect {
         }
     }
     
+    // New method to safely remove downed effect before death
+    public static void removeDownedEffect(Player player, HealthContainer container) {
+        if (player != null && container != null) {
+            // Clear the forced pose immediately
+            player.setForcedPose(null);
+            player.setPose(net.minecraft.world.entity.Pose.STANDING);
+            player.refreshDimensions();
+            
+            // Clear NBT data
+            CompoundTag root = player.getPersistentData();
+            if (root.contains(MedicalSystem.MOD_ID)) {
+                CompoundTag modTag = root.getCompound(MedicalSystem.MOD_ID).orElse(new CompoundTag());
+                modTag.remove(NBT_DEATH);
+                modTag.remove(NBT_GIVEUP);
+                root.put(MedicalSystem.MOD_ID, modTag);
+            }
+            
+            // Remove the status effect
+            container.getGlobalStatusEffects().remove(
+                MedSystemStatusEffects.DOWNED_PLAYER.value(), 
+                tnt.tarkovcraft.core.util.context.ContextImpl.of(
+                    tnt.tarkovcraft.core.util.context.ContextKeys.LIVING_ENTITY, player,
+                    MedicalSystemContextKeys.HEALTH_CONTAINER, container
+                )
+            );
+        }
+    }
+    
     // New method to handle rescue
     public static void handleRescue(Player downedPlayer) {
         if (downedPlayer != null) {
@@ -209,6 +241,9 @@ public class DownedPlayerStatusEffect extends StatusEffect {
                 // Restore critical health
                 restoreHealthAfterRescue(container);
                 
+                // Update player's vanilla health to match container
+                container.updateHealth(downedPlayer);
+                
                 // Ensure pose is cleared immediately
                 downedPlayer.setForcedPose(null);
                 downedPlayer.setPose(net.minecraft.world.entity.Pose.STANDING);
@@ -223,37 +258,37 @@ public class DownedPlayerStatusEffect extends StatusEffect {
     }
     
     private static void restoreHealthAfterRescue(HealthContainer container) {
-        // Get updated downed thresholds
-        float headThreshold = 0.20f; // Raised to 20%
-        float chestThreshold = 0.15f; // Raised to 15%
+        // Get current config thresholds (36% for both)
+        MedSystemConfig config = MedicalSystem.getConfig();
+        float headThreshold = config.headDownedThreshold; 
+        float chestThreshold = config.chestDownedThreshold;
         
         // Restore head health if below threshold
         container.getBodyPartStream()
-            .filter(part -> part.getGroup().name().toLowerCase().contains("head"))
+            .filter(part -> part.getGroup() == BodyPartGroup.HEAD)
             .forEach(part -> {
                 float currentHealth = part.getHealth();
                 float maxHealth = part.getMaxHealth();
                 float healthPercent = currentHealth / maxHealth;
                 
                 if (healthPercent < headThreshold) {
-                    float targetHealth = maxHealth * 0.35f; // Restore to 35%
+                    // Restore to 120% of downed threshold to ensure well above threshold
+                    float targetHealth = maxHealth * headThreshold * 1.20f; 
                     part.heal(targetHealth - currentHealth);
                 }
             });
         
         // Restore chest health if below threshold  
         container.getBodyPartStream()
-            .filter(part -> {
-                String groupName = part.getGroup().name().toLowerCase();
-                return groupName.contains("chest") || groupName.contains("torso");
-            })
+            .filter(part -> part.getGroup() == BodyPartGroup.TORSO)
             .forEach(part -> {
                 float currentHealth = part.getHealth();
                 float maxHealth = part.getMaxHealth();
                 float healthPercent = currentHealth / maxHealth;
                 
                 if (healthPercent < chestThreshold) {
-                    float targetHealth = maxHealth * 0.25f; // Restore to 25%
+                    // Restore to 120% of downed threshold to ensure well above threshold
+                    float targetHealth = maxHealth * chestThreshold * 1.20f;
                     part.heal(targetHealth - currentHealth);
                 }
             });
